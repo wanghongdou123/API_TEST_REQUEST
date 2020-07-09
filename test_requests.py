@@ -1,3 +1,4 @@
+import random
 import re
 import pytest
 import requests
@@ -50,22 +51,29 @@ def test_delete(userid, test_token):
     return res.json()
 
 
-@pytest.mark.parametrize("userid, name, mobile",[("lisa1","丽莎1","13811110001")])
+# def test_create_data():
+#     data = [(str(random.randint(0, 9999999)),
+#                  "zhangsan",
+#                  str(random.randint(13800000000,13899999999))) for x in range(10)]
+#     return data
+
+# 列表生成器
+def test_create_data():
+    data = [("wu123fff" + str(x), "zhangsan", "138%08d" % x) for x in range(20)]
+    return data
+
+
+@pytest.mark.parametrize("userid, name, mobile", test_create_data())
 def test_all(userid, name, mobile, test_token):
     # 可能出现创建失败
     try:
         # 验证创建
         assert "created" == test_create(userid, name, mobile, test_token)["errmsg"]
     except AssertionError as e:
-        print("12345")
         if "mobile existed" in e.__str__():
-            print("111")
             print(e.__str__())
-            print('222')
             # 如果手机号被使用了，找出使用手机号的userid,进行删除
             re_userid = re.findall(":(.*)'", e.__str__())[0]
-            print(re_userid)
-            print("333")
             assert "deleted" == test_delete(re_userid, test_token)["errmsg"]
             assert 60111 == test_get(re_userid, test_token)["errcode"]
             assert "created" == test_create(userid, name, mobile, test_token)["errmsg"]
