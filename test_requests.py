@@ -2,6 +2,7 @@ import random
 import re
 import pytest
 import requests
+from api.requests_wework.wework import WeWork
 
 
 @pytest.fixture(scope="session")
@@ -85,4 +86,14 @@ def test_all(userid, name, mobile, test_token):
     assert "xxxxxx" == test_get(userid, test_token)["name"]
     assert "deleted" == test_delete(userid, test_token)["errmsg"]
     assert 60111 == test_get(userid, test_token)["errcode"]
+
+
+# 将TOKEN存在session中
+def test_session():
+    s = requests.Session()
+    s.params = {
+        "access_token": WeWork().get_token("2MXedRgNClgNrGZ3Vz3A3jWVqRU-zEHBqDbS6Qq4ChY")
+    }
+    res = s.get("https://qyapi.weixin.qq.com/cgi-bin/user/get?userid=test")
+    print(res.json())
 
